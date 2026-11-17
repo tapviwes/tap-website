@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TAP – Google review cards</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f6f8fb;--surface:#fff;--ink:#16202e;--muted:#566275;--line:#dde3ec;--blue:#1a73e8;--red:#ea4335;--yellow:#fbbc04;--green:#34a853;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1520;--surface:#18212f;--ink:#eef2f8;--muted:#9aa7bb;--line:#2a364a}}
+:root[data-theme="dark"]{--bg:#0f1520;--surface:#18212f;--ink:#eef2f8;--muted:#9aa7bb;--line:#2a364a}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;line-height:1.55}
+a{color:inherit}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+.logo{font-weight:800;font-size:1.2rem;letter-spacing:-.02em}
+.logo i{font-style:normal;color:var(--blue)}
+.btn{display:inline-block;background:var(--blue);color:#fff;border:0;border-radius:999px;padding:13px 26px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer}
+.btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:36px 0 64px}
+h1{font-size:clamp(2.1rem,5vw,3.5rem);line-height:1.05;letter-spacing:-.03em;margin:0 0 16px}
+.lead{font-size:1.15rem;color:var(--muted);max-width:30em}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.stage{display:flex;justify-content:center;padding:30px 0}
+.card{width:230px;height:360px;background:#fff;color:#1d2430;border-radius:20px;padding:22px 18px;text-align:center;box-shadow:0 30px 50px -20px rgba(20,40,80,.45);transform:rotate(-6deg);position:relative;display:flex;flex-direction:column;align-items:center}
+.card small{font-weight:700;font-size:.72rem;letter-spacing:.02em}
+.card b{font-size:1.5rem;letter-spacing:-.03em}
+.card b span:nth-child(1){color:#4285f4}.card b span:nth-child(2){color:#ea4335}.card b span:nth-child(3){color:#fbbc04}.card b span:nth-child(4){color:#4285f4}.card b span:nth-child(5){color:#34a853}.card b span:nth-child(6){color:#ea4335}
+.g{width:112px;height:112px;border-radius:50%;background:#ececec;display:grid;place-items:center;margin:20px 0}
+.g svg{width:70px;height:70px}
+.card p{font-size:.7rem;margin:0 0 8px;font-weight:600}
+.stars{color:#fbbc04;letter-spacing:3px;font-size:1.1rem}
+.bar{position:absolute;left:18px;right:18px;bottom:16px;height:4px;background:linear-gradient(90deg,var(--red) 25%,var(--blue) 25% 50%,var(--yellow) 50% 75%,var(--green) 75%)}
+section{padding:56px 0}
+h2{font-size:clamp(1.6rem,3.5vw,2.2rem);letter-spacing:-.02em;margin:0 0 28px}
+.steps,.feat,.plans{display:grid;gap:18px}
+.steps{grid-template-columns:repeat(3,1fr)}
+.feat{grid-template-columns:repeat(2,1fr)}
+.plans{grid-template-columns:repeat(3,1fr)}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+.box h3{margin:0 0 6px}
+.box p{margin:0;color:var(--muted)}
+.plan{display:flex;flex-direction:column;gap:6px}
+.plan.best{border:2px solid var(--blue)}
+.price{font-size:2rem;font-weight:800;letter-spacing:-.02em}
+.price small{font-size:.9rem;font-weight:500;color:var(--muted)}
+.plan ul{padding-left:18px;margin:6px 0 14px;color:var(--muted)}
+.plan .btn{margin-top:auto;text-align:center}
+form{display:grid;gap:14px;max-width:560px}
+label{font-weight:700;font-size:.95rem;display:grid;gap:6px}
+input,select{font:inherit;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+#msg{font-weight:700;min-height:1.5em}
+details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+summary{font-weight:700;cursor:pointer}
+details p{color:var(--muted);margin:8px 0 0}
+footer{padding:30px 0 40px;color:var(--muted);border-top:1px solid var(--line);font-size:.9rem}
+.social{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}.social a{display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;text-decoration:none;color:#fff}.social svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.social .ig{background:linear-gradient(45deg,#f09433,#dc2743,#bc1888)}.social .wa{background:#25d366}.social a:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.site-foot{background:#121212;color:#fff;border-top:0;padding:48px 0 40px;margin-top:40px;font-size:1rem}
+.site-foot a{text-decoration:none}
+.flogo{font-size:1.6rem;font-weight:800;letter-spacing:.35em;margin-bottom:14px}
+.fdesc{max-width:34em;color:#d6d6d6;margin:0 0 22px}
+.soc{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:36px}
+.soc a{width:48px;height:48px;border:1px solid #6b6b6b;border-radius:50%;display:grid;place-items:center;color:#fff}
+.soc svg,.wafloat svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fcols{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:36px}
+.fcols h4{margin:0 0 14px;font-size:1.1rem}
+.fcols a{display:block;color:#d6d6d6;margin-bottom:12px}
+.touch{font-style:italic;font-size:1.5rem;margin:0 0 16px}
+.site-foot form{max-width:560px}
+.site-foot input{background:transparent;color:#fff;border:1px solid #6b6b6b;border-radius:0}
+.site-foot .btn{background:#fff;color:#121212;border-radius:0}
+.copy{border-top:1px solid #333;margin:36px 0 0;padding-top:22px;color:#aaa;font-size:.85rem;max-width:40em}
+.wafloat{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;background:#25d366;color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px rgba(0,0,0,.35);z-index:20}
+.wafloat svg{width:28px;height:28px}
+@media (max-width:760px){.hero,.steps,.feat,.plans{grid-template-columns:1fr}.stage{order:-1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="logo">TAP</div><a class="btn ghost" href="#order">Order now</a></header>
+
+<div class="hero">
+<div>
+<h1>Get more Google reviews with one tap.</h1>
+<p class="lead">A smart NFC card that opens your Google review page the moment a customer taps it with their phone. No app, no typing, no searching for your business.</p>
+<div class="cta"><a class="btn" href="#order">Order your cards</a><a class="btn ghost" href="#how">How it works</a></div>
+</div>
+<div class="stage" aria-hidden="true">
+<div class="card"><small>REVIEW US ON</small><b><span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span></b>
+<div class="g"><svg viewBox="0 0 48 48"><path fill="#ea4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285f4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#fbbc04" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34a853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg></div>
+<p>Please tap this card with your phone to rate us on Google</p><div class="stars">★★★★★</div><div class="bar"></div></div>
+</div>
+</div>
+
+<section id="how"><h2>How it works</h2>
+<div class="steps">
+<div class="box"><h3>1. We program your card</h3><p>Send us your Google Business link. We write it to every card.</p></div>
+<div class="box"><h3>2. Customer taps</h3><p>They hold their phone near the card. Works on iPhone and Android.</p></div>
+<div class="box"><h3>3. Review page opens</h3><p>Your Google review box appears instantly. They pick the stars and write.</p></div>
+</div></section>
+
+<section><h2>Why businesses use it</h2>
+<div class="feat">
+<div class="box"><h3>Fast for customers</h3><p>One tap instead of five steps. More people finish the review.</p></div>
+<div class="box"><h3>Rank higher locally</h3><p>More and fresher reviews help you stand out on Google Maps.</p></div>
+<div class="box"><h3>No battery, no app</h3><p>Durable PVC card with an NFC chip that lasts for years.</p></div>
+<div class="box"><h3>Your counter, your brand</h3><p>Ask us for a custom logo print for larger orders.</p></div>
+</div></section>
+
+<section id="pricing"><h2>Pricing</h2>
+<div class="plans">
+<div class="box plan"><h3>1 card</h3><div class="price">39 DT</div><ul><li>Programmed with your link</li><li>Ready to use</li></ul><a class="btn ghost" href="#order" data-plan="1 card (39 DT)">Choose</a></div>
+<div class="box plan best"><h3>2 cards</h3><div class="price">50 DT</div><ul><li>Save 28 DT</li><li>One per counter or staff</li></ul><a class="btn" href="#order" data-plan="2 cards (50 DT)">Choose</a></div>
+<div class="box plan"><h3>3 cards</h3><div class="price">70 DT</div><ul><li>Save 47 DT</li><li>Best price per card</li></ul><a class="btn ghost" href="#order" data-plan="3 cards (70 DT)">Choose</a></div>
+</div></section>
+
+<section id="order"><h2>Place your order</h2>
+<form id="f">
+<label>Pack<select id="plan"><option>1 card (39 DT)</option><option>2 cards (50 DT)</option><option>3 cards (70 DT)</option></select></label>
+<label>Your name<input id="name" required autocomplete="name"></label>
+<label>Phone or WhatsApp<input id="phone" required autocomplete="tel"></label>
+<label>City<select id="city" required autocomplete="address-level2"><option value="" selected disabled>Choose your city</option><option>Tunis</option><option>Ariana</option><option>Ben Arous</option><option>Manouba</option><option>Nabeul</option><option>Zaghouan</option><option>Bizerte</option><option>Béja</option><option>Jendouba</option><option>Le Kef</option><option>Siliana</option><option>Sousse</option><option>Monastir</option><option>Mahdia</option><option>Sfax</option><option>Kairouan</option><option>Kasserine</option><option>Sidi Bouzid</option><option>Gabès</option><option>Médenine</option><option>Tataouine</option><option>Gafsa</option><option>Tozeur</option><option>Kébili</option></select></label>
+<label>Business name<input id="biz" required></label>
+<label>Google Business / review link<input id="link" placeholder="https://g.page/r/..."></label>
+<button class="btn" type="submit">Send order</button>
+<div id="msg" role="status"></div>
+</form></section>
+
+<section><h2>Questions</h2>
+<details><summary>Does the customer need an app?</summary><p>No. Modern iPhones and Androids read NFC cards from the camera or lock screen.</p></details>
+<details><summary>How do I find my Google review link?</summary><p>Open your Google Business Profile, choose “Ask for reviews”, and copy the link.</p></details>
+<details><summary>Can I change the link later?</summary><p>Yes. The chip can be rewritten with any NFC app, or contact us.</p></details>
+</section>
+
+<footer><div class="social"><a class="ig" href="https://www.instagram.com/tapreviews.shop?obrf=YTQwYzZnM2FvaHVo" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8"/></svg></a><a class="wa" href="https://wa.me/21650463586" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2-5.5A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 8.5c.3 2.5 2.5 5 5.5 6l1.5-1.5-2-1-1 .8c-.8-.4-1.6-1.2-2-2l.8-1-1-2z" fill="currentColor" stroke-width="1"/></svg></a></div>© TAP. Google and the Google logo are trademarks of Google LLC. Not affiliated with Google.</footer>
+</div>
+<script>
+// TAP orders: public project URL + publishable key. Never put a service_role/secret key here.
+const SUPABASE_URL = 'https://vqpzwbtlcyyrozveyatg.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_B-kUK-lqzAcLKdwhLxU6cg_jv_xsKMC';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+document.querySelectorAll('[data-plan]').forEach(function(a){
+  a.addEventListener('click', function(){ document.getElementById('plan').value = a.dataset.plan; });
+});
+
+document.getElementById('f').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const form = e.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const msg = document.getElementById('msg');
+  button.disabled = true;
+  msg.textContent = 'Sending your order…';
+  const order = {
+    pack: document.getElementById('plan').value,
+    customer_name: document.getElementById('name').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    city: document.getElementById('city').value,
+    business_name: document.getElementById('biz').value.trim(),
+    review_link: document.getElementById('link').value.trim() || null
+  };
+  try {
+    const { error } = await db.from('orders').insert(order);
+    if (error) throw error;
+    msg.textContent = 'Your order was received successfully. Thank you!';
+    form.reset();
+  } catch (err) {
+    console.error(err);
+    msg.textContent = 'Could not send the order. Please try again later.';
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
